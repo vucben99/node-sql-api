@@ -15,6 +15,16 @@ app.get('/articles', (req, res) => {
   res.json(articles)
 })
 
+app.post('/new-article', (req, res) => {
+  const { title, description } = req.body
+  const article = prisma.article.create({
+    data: {
+      title,
+      description
+    }
+  })
+})
+
 app.listen(port, () => {
   console.log(`Listening on port ${port}`)
 })
