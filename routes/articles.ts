@@ -3,7 +3,7 @@ import { prisma } from '../index'
 const router = express.Router()
 
 router.get('/', async (req, res) => {
-  if (!req.query.pageSize || !req.query.page) return res.sendStatus(400).json({
+  if (!req.query.pageSize || !req.query.page) return res.status(400).json({
     error: "Missing 'pageSize' and/or 'page' query parameters!"
   })
 
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
     }
   } catch (error) {
     console.error('Error in query params:', error)
-    return res.sendStatus(400).json({
+    return res.status(400).json({
       error: "Invalid 'pageSize' and/or 'page' query parameters!"
     })
   }
