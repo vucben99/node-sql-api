@@ -19,5 +19,5 @@ model Article {
 model Token {
   token String @id @unique
   platform String
-  usesLeft Int
+  remaining Int @default(5)
 }
