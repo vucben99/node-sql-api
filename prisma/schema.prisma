@@ -15,3 +15,9 @@ model Article {
   title String
   description  String
 }
+
+model Token {
+  token String @id @unique
+  platform String
+  usesLeft Int
+}
