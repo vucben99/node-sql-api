@@ -35,6 +35,10 @@ type RenewTokenRequest = {
 
 router.post('/renew', async (req, res) => {
   const { token } = req.body as RenewTokenRequest
+  if(!token) return res.status(400).json({
+    error: 'Missing token'
+  })
+
   try {
     const session = await prisma.token.update({
       where: {
@@ -45,7 +49,7 @@ router.post('/renew', async (req, res) => {
       }
     })
 
-    if (!session) return res.status(404).json({
+    if (!session) return res.status(403).json({
       error: 'Not a valid token'
     })
 
