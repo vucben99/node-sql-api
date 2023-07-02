@@ -1,5 +1,8 @@
 import express from 'express'
 import { prisma } from '../index'
+
+import authenticateRequest from '../middleware/authenticateRequest'
+
 const router = express.Router()
 
 router.get('/', async (req, res) => {
@@ -19,12 +22,12 @@ router.get('/', async (req, res) => {
         id: article.id,
         title: article.title
       }))
-      const data = articleList.slice(startIndex, endIndex)
+      const pageData = articleList.slice(startIndex, endIndex)
       return res.json({
-        list: data,
+        list: pageData,
         meta: {
           pageSize,
-          pageCount: articles.length / pageSize,
+          pageCount: Math.ceil(articleList.length / pageSize),
           page
         }
       })
@@ -40,12 +43,28 @@ router.get('/', async (req, res) => {
   }
 })
 
+router.get('/:id', authenticateRequest, async (req, res) => {
+  const id = parseInt(req.params.id)
+  if (isNaN(id)) return res.status(400).json({
+    error: "Invalid id format! Please use a number"
+  })
+
+  const article = await prisma.article.findUnique({
+    where: { id }
+  })
+
+  if (!article) return res.status(404).json({
+    error: "No article found with the given id"
+  })
+  return res.json(article)
+})
+
 type CreateArticleReq = {
   title: string
   description: string
 }
 
-router.post('/', async (req, res) => {
+router.post('/', authenticateRequest, async (req, res) => {
   const { title, description } = req.body as CreateArticleReq
   try {
     const article = await prisma.article.create({
