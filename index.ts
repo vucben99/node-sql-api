@@ -1,30 +1,22 @@
 import express from 'express'
 import cors from 'cors'
-import { PrismaClient } from '@prisma/client'
-import { z } from 'zod'
+import morgan from 'morgan'
 
-const port = 3000
+import articles from './routes/articles'
+import token from './routes/token'
+
+const PORT = process.env.PORT || 3000
 const app = express()
-const prisma = new PrismaClient()
 
+// Middleware
 app.use(cors())
 app.use(express.json())
+app.use(morgan("dev"))
 
-app.get('/articles', (req, res) => {
-  const articles = prisma.article.findMany()
-  res.json(articles)
-})
+// Routes
+app.use('/articles', articles)
+app.use('/token', token)
 
-app.post('/new-article', (req, res) => {
-  const { title, description } = req.body
-  const article = prisma.article.create({
-    data: {
-      title,
-      description
-    }
-  })
-})
-
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`)
 })
