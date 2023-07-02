@@ -1,7 +1,8 @@
-import express from 'express'
-import { prisma } from '../index'
+import express, { Request, Response, NextFunction } from 'express'
 
+import { prisma } from '../index'
 import authenticateRequest from '../middleware/authenticateRequest'
+import validateNewArticleRequest from '../middleware/validateNewArticleRequest'
 
 const router = express.Router()
 
@@ -64,7 +65,7 @@ type CreateArticleReq = {
   description: string
 }
 
-router.post('/', authenticateRequest, async (req, res) => {
+router.post('/', [authenticateRequest, validateNewArticleRequest], async (req: Request, res: Response) => {
   const { title, description } = req.body as CreateArticleReq
   try {
     const article = await prisma.article.create({
