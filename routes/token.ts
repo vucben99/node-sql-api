@@ -1,6 +1,8 @@
 import express from 'express'
 import { v4 as uuidv4 } from 'uuid'
+
 import { prisma } from '../index'
+import validateNewTokenRequest from '../middleware/validateNewTokenRequest'
 
 const router = express.Router()
 
@@ -8,7 +10,7 @@ type TokenRequest = {
   platform: string
 }
 
-router.post('/', async (req, res) => {
+router.post('/', validateNewTokenRequest, async (req, res) => {
   const { platform } = req.body as TokenRequest
   try {
     const session = await prisma.token.create({
@@ -42,6 +44,11 @@ router.post('/renew', async (req, res) => {
         remaining: 5
       }
     })
+
+    if (!session) return res.status(404).json({
+      error: 'Not a valid token'
+    })
+
     return res.json({
       token: session.token,
       remaining: session.remaining
