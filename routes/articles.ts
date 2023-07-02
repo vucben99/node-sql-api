@@ -1,8 +1,6 @@
 import express from 'express'
-import { PrismaClient } from '@prisma/client'
-
+import { prisma } from '../index'
 const router = express.Router()
-const prisma = new PrismaClient()
 
 router.get('/', async (req, res) => {
   if (!req.query.pageSize || !req.query.page) return res.sendStatus(400).json({
@@ -22,7 +20,14 @@ router.get('/', async (req, res) => {
         title: article.title
       }))
       const data = articleList.slice(startIndex, endIndex)
-      return res.json(data)
+      return res.json({
+        list: data,
+        meta: {
+          pageSize,
+          pageCount: articles.length / pageSize,
+          page
+        }
+      })
     } catch (error) {
       console.error(error)
       return res.sendStatus(500)
@@ -35,8 +40,13 @@ router.get('/', async (req, res) => {
   }
 })
 
+type CreateArticleReq = {
+  title: string
+  description: string
+}
+
 router.post('/', async (req, res) => {
-  const { title, description } = req.body
+  const { title, description } = req.body as CreateArticleReq
   try {
     const article = await prisma.article.create({
       data: {
