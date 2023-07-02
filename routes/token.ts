@@ -27,4 +27,29 @@ router.post('/', async (req, res) => {
   }
 })
 
+type RenewTokenRequest = {
+  token: string
+}
+
+router.post('/renew', async (req, res) => {
+  const { token } = req.body as RenewTokenRequest
+  try {
+    const session = await prisma.token.update({
+      where: {
+        token
+      },
+      data: {
+        remaining: 5
+      }
+    })
+    return res.json({
+      token: session.token,
+      remaining: session.remaining
+    })
+  } catch(error) {
+    console.error(error)
+    return res.sendStatus(500)
+  }
+})
+
 export default router
