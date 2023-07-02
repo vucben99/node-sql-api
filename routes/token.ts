@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
     })
     return res.json({
       token: session.token,
-      usesLeft: session.remaining
+      remaining: session.remaining
     })
   } catch (error) {
     console.error(error)
@@ -46,7 +46,7 @@ router.post('/renew', async (req, res) => {
       token: session.token,
       remaining: session.remaining
     })
-  } catch(error) {
+  } catch (error) {
     console.error(error)
     return res.sendStatus(500)
   }
