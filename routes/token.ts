@@ -7,7 +7,34 @@ import validateRequestSchema from '../middleware/validateRequestSchema'
 
 const router = express.Router()
 
-// POST /token endpoint
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: API endpoints for authentication
+ */
+
+/**
+ * @swagger
+ * /token:
+ *   post:
+ *     summary: Generate a new token
+ *     tags: [Authentication]
+ *     description: Generates a new token for the provided platform.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/NewTokenRequest'
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Missing platform or invalid platform value
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/', validateRequestSchema(NewTokenRequestSchema), async (req, res) => {
   const { platform } = req.body as NewTokenRequest
   if (!platform) return res.status(400).json({
@@ -26,7 +53,27 @@ router.post('/', validateRequestSchema(NewTokenRequestSchema), async (req, res) 
   })
 })
 
-// POST /token/renew endpoint
+/**
+ * @swagger
+ * /token/renew:
+ *   post:
+ *     summary: Renew a token
+ *     tags: [Authentication]
+ *     description: Renews an existing token with a new expiration.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RenewTokenRequest'
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Missing token
+ *       403:
+ *         description: Invalid token
+ */
 router.post('/renew', validateRequestSchema(RenewTokenRequestSchema), async (req, res) => {
   const { token } = req.body as RenewTokenRequest
   if (!token) return res.status(400).json({

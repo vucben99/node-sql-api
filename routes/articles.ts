@@ -7,7 +7,39 @@ import { NewArticleSchema, NewArticle } from '../Schemas'
 
 const router = express.Router()
 
-// GET /articles endpoint (w/ query params)
+/**
+ * @swagger
+ * tags:
+ *   name: Articles
+ *   description: API endpoints for managing articles
+ */
+
+/**
+ * @swagger
+ * /articles:
+ *   get:
+ *     summary: Get a paginated list of articles
+ *     tags: [Articles]
+ *     description: Returns a paginated list of articles based on the provided query parameters.
+ *     parameters:
+ *       - in: query
+ *         name: pageSize
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The number of articles to display per page.
+ *       - in: query
+ *         name: page
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The page number.
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Invalid or missing query parameters
+ */
 router.get('/', async (req, res) => {
   if (!req.query.pageSize || !req.query.page) return res.status(400).json({
     error: "Missing 'pageSize' and/or 'page' query parameters!"
@@ -42,7 +74,30 @@ router.get('/', async (req, res) => {
   })
 })
 
-// GET /articles/:id endpoint
+/**
+ * @swagger
+ * /articles/{id}:
+ *   get:
+ *     summary: Get an article by ID
+ *     tags: [Articles]
+ *     description: Returns an article by the specified ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the article.
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Invalid ID format
+ *       404:
+ *         description: Article not found
+ *       401:
+ *         description: Unauthorized request
+ */
 router.get('/:id', authenticateRequest, async (req, res) => {
   const id = parseInt(req.params.id)
   if (isNaN(id)) return res.status(400).json({
@@ -59,7 +114,29 @@ router.get('/:id', authenticateRequest, async (req, res) => {
   return res.json(article)
 })
 
-// POST /articles endpoint
+/**
+ * @swagger
+ * /articles:
+ *   post:
+ *     summary: Create a new article
+ *     tags: [Articles]
+ *     description: Creates a new article with the provided title and description.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/NewArticle'
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       401:
+ *         description: Unauthorized request
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/', [authenticateRequest, validateRequestSchema(NewArticleSchema)], async (req: Request, res: Response) => {
   const { title, description } = req.body as NewArticle
   const article = await prisma.article.create({
