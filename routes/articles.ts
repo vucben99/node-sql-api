@@ -1,8 +1,9 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response } from 'express'
 
 import { prisma } from '../index'
 import authenticateRequest from '../middleware/authenticateRequest'
-import validateNewArticleRequest from '../middleware/validateNewArticleRequest'
+import validateRequestSchema from '../middleware/validateRequestSchema'
+import { NewArticleSchema, NewArticle } from '../Schemas'
 
 const router = express.Router()
 
@@ -11,37 +12,33 @@ router.get('/', async (req, res) => {
     error: "Missing 'pageSize' and/or 'page' query parameters!"
   })
 
-  try {
-    const pageSize = parseInt(req.query.pageSize as string)
-    const page = parseInt(req.query.page as string)
-    const startIndex = (page - 1) * pageSize
-    const endIndex = page * pageSize
+  const pageSize = parseInt(req.query.pageSize as string)
+  const page = parseInt(req.query.page as string)
 
-    try {
-      const articles = await prisma.article.findMany()
-      const articleList = articles.map(article => ({
-        id: article.id,
-        title: article.title
-      }))
-      const pageData = articleList.slice(startIndex, endIndex)
-      return res.json({
-        list: pageData,
-        meta: {
-          pageSize,
-          pageCount: Math.ceil(articleList.length / pageSize),
-          page
-        }
-      })
-    } catch (error) {
-      console.error(error)
-      return res.sendStatus(500)
+  if (isNaN(pageSize) || isNaN(page)) return res.status(400).json({
+    error: "Invalid 'pageSize' and/or 'page' query parameters! Please use numbers."
+  })
+
+  const startIndex = (page - 1) * pageSize
+  const endIndex = page * pageSize
+
+  const articles = await prisma.article.findMany()
+
+  const articleList = articles.map(article => ({
+    id: article.id,
+    title: article.title
+  }))
+
+  const pageData = articleList.slice(startIndex, endIndex)
+
+  return res.json({
+    list: pageData,
+    meta: {
+      pageSize,
+      pageCount: Math.ceil(articleList.length / pageSize),
+      page
     }
-  } catch (error) {
-    console.error('Error in query params:', error)
-    return res.status(400).json({
-      error: "Invalid 'pageSize' and/or 'page' query parameters!"
-    })
-  }
+  })
 })
 
 router.get('/:id', authenticateRequest, async (req, res) => {
@@ -60,25 +57,16 @@ router.get('/:id', authenticateRequest, async (req, res) => {
   return res.json(article)
 })
 
-type CreateArticleReq = {
-  title: string
-  description: string
-}
-
-router.post('/', [authenticateRequest, validateNewArticleRequest], async (req: Request, res: Response) => {
-  const { title, description } = req.body as CreateArticleReq
-  try {
-    const article = await prisma.article.create({
-      data: {
-        title,
-        description
-      }
-    })
-    res.json(article)
-  } catch (error) {
-    console.error(error)
-    return res.sendStatus(500)
-  }
+router.post('/', [authenticateRequest, validateRequestSchema(NewArticleSchema)], async (req: Request, res: Response) => {
+  const { title, description } = req.body as NewArticle
+  const article = await prisma.article.create({
+    data: {
+      title,
+      description
+    }
+  })
+  if (!article) return res.sendStatus(500)
+  return res.json(article)
 })
 
 export default router
