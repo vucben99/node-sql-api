@@ -7,6 +7,7 @@ import { NewArticleSchema, NewArticle } from '../Schemas'
 
 const router = express.Router()
 
+// GET /articles endpoint (w/ query params)
 router.get('/', async (req, res) => {
   if (!req.query.pageSize || !req.query.page) return res.status(400).json({
     error: "Missing 'pageSize' and/or 'page' query parameters!"
@@ -41,6 +42,7 @@ router.get('/', async (req, res) => {
   })
 })
 
+// GET /articles/:id endpoint
 router.get('/:id', authenticateRequest, async (req, res) => {
   const id = parseInt(req.params.id)
   if (isNaN(id)) return res.status(400).json({
@@ -57,6 +59,7 @@ router.get('/:id', authenticateRequest, async (req, res) => {
   return res.json(article)
 })
 
+// POST /articles endpoint
 router.post('/', [authenticateRequest, validateRequestSchema(NewArticleSchema)], async (req: Request, res: Response) => {
   const { title, description } = req.body as NewArticle
   const article = await prisma.article.create({
