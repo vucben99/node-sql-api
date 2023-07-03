@@ -1,6 +1,5 @@
 import express from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { z } from 'zod'
 
 import { prisma } from '../index'
 import { NewTokenRequestSchema, NewTokenRequest, RenewTokenRequestSchema, RenewTokenRequest } from '../Schemas'
@@ -8,7 +7,7 @@ import validateRequestSchema from '../middleware/validateRequestSchema'
 
 const router = express.Router()
 
-// /token endpoint
+// POST /token endpoint
 router.post('/', validateRequestSchema(NewTokenRequestSchema), async (req, res) => {
   const { platform } = req.body as NewTokenRequest
   if (!platform) return res.status(400).json({
@@ -27,7 +26,7 @@ router.post('/', validateRequestSchema(NewTokenRequestSchema), async (req, res) 
   })
 })
 
-// /token/renew endpoint
+// POST /token/renew endpoint
 router.post('/renew', validateRequestSchema(RenewTokenRequestSchema), async (req, res) => {
   const { token } = req.body as RenewTokenRequest
   if (!token) return res.status(400).json({
